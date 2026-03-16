@@ -107,7 +107,7 @@ function finishTest() {
     timestamp: Date.now(),
   }));
 
-  Engine.renderResult(character.code);
+  renderResult(character);
   showScreen("screen-result");
 }
 
@@ -118,41 +118,140 @@ function showSavedResult() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!saved || !saved.code) throw new Error("invalid");
+    const character = CHARACTERS[saved.code];
+    if (!character) throw new Error("unknown code");
     appState.result  = saved.code;
     appState.answers = saved.answers || [];
-    Engine.renderResult(saved.code);
+    renderResult(character);
     showScreen("screen-result");
   } catch {
     localStorage.removeItem(STORAGE_KEY);
-    renderIntroActions(); // 버튼 재렌더
+    renderIntroActions();
     alert("저장된 결과를 불러올 수 없습니다. 다시 테스트해 주세요.");
   }
+}
+
+/* ─────────────────────────────────────────
+   결과 화면 렌더링
+───────────────────────────────────────── */
+/**
+ * #result-content를 캐릭터 데이터로 채운다.
+ * @param {Object} character  CHARACTERS 맵의 항목
+ */
+function renderResult(character) {
+  const container = document.getElementById("result-content");
+  container.innerHTML = "";
+
+  // 1. 헤더: 이모지 + 캐릭터명 + 코드 뱃지 + 유사 MBTI 뱃지
+  const header = document.createElement("div");
+  header.className = "result__header";
+  header.innerHTML = `
+    <div class="result__emoji">${character.emoji}</div>
+    <p class="result__char-name">${character.characterName}</p>
+    <div class="result__badges">
+      <span class="badge badge--code">${character.code}</span>
+      <span class="badge badge--mbti">유사 MBTI ${character.similarMBTI}</span>
+    </div>
+  `;
+  container.appendChild(header);
+
+  // 2. 한줄 소개 (title)
+  const titleEl = document.createElement("p");
+  titleEl.className = "result__title";
+  titleEl.textContent = character.title;
+  container.appendChild(titleEl);
+
+  // 3. 설명 텍스트 블록
+  const descEl = document.createElement("div");
+  descEl.className = "result__description";
+  character.description.forEach(line => {
+    const p = document.createElement("p");
+    p.textContent = line;
+    descEl.appendChild(p);
+  });
+  container.appendChild(descEl);
+
+  // 4. 축 요약 칩 4개
+  const axesEl = document.createElement("div");
+  axesEl.className = "result__axes";
+  character.axes.forEach(axis => {
+    const chip = document.createElement("span");
+    chip.className = "axis-chip";
+    chip.textContent = axis;
+    axesEl.appendChild(chip);
+  });
+  container.appendChild(axesEl);
+
+  // 5. 궁합 카드 2개
+  const chemEl = document.createElement("div");
+  chemEl.className = "result__chemistry";
+
+  [
+    { type: "best",  icon: "💚", label: "최고의 궁합",      data: character.chemistry.best  },
+    { type: "worst", icon: "❌", label: "주의가 필요한 궁합", data: character.chemistry.worst },
+  ].forEach(({ type, icon, label, data }) => {
+    const card = document.createElement("div");
+    card.className = `chemistry-card chemistry-card--${type}`;
+    card.innerHTML = `
+      <div class="chemistry-card__header">
+        <span class="chemistry-card__icon">${icon}</span>
+        <span class="chemistry-card__label">${label} &mdash; <strong>${data.name}</strong></span>
+      </div>
+      <p class="chemistry-card__reason">${data.reason}</p>
+    `;
+    chemEl.appendChild(card);
+  });
+  container.appendChild(chemEl);
 }
 
 /* ─────────────────────────────────────────
    결과 화면 버튼
 ───────────────────────────────────────── */
 function initResultButtons() {
+  // 다시 테스트하기
   document.getElementById("btn-retry").addEventListener("click", () => {
+    appState.currentQuestion = 0;
+    appState.answers         = [];
+    appState.result          = null;
     showScreen("screen-intro");
     renderIntroActions();
   });
 
-  document.getElementById("btn-share").addEventListener("click", () => {
-    const code = appState.result;
-    const char = CHARACTERS[code];
-    const text = `나는 페이레터 ${code} 유형 — "${char?.name}" 🎉\n결제 성향 테스트 해보기: ${location.href}`;
+  // 결과 복사하기
+  document.getElementById("btn-copy").addEventListener("click", () => {
+    const char = CHARACTERS[appState.result];
+    if (!char) return;
 
-    if (navigator.share) {
-      navigator.share({ title: "페이레터 캐릭터 진단", text }).catch(() => {});
+    const text =
+      `나는 페이레터 편지 배달 캐릭터 테스트 결과 [${char.characterName}]!\n` +
+      `유사 MBTI는 ${char.similarMBTI},\n` +
+      `한줄 소개는 '${char.title}'\n` +
+      `최고의 궁합은 ${char.chemistry.best.name}, 최악의 궁합은 ${char.chemistry.worst.name}!`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => alert("결과가 클립보드에 복사되었습니다!"))
+        .catch(() => _fallbackCopy(text));
     } else {
-      navigator.clipboard.writeText(text).then(() => {
-        alert("결과가 클립보드에 복사되었습니다!");
-      }).catch(() => {
-        alert(`공유 텍스트:\n\n${text}`);
-      });
+      _fallbackCopy(text);
     }
   });
+}
+
+/** clipboard API 미지원 환경용 textarea 폴백 */
+function _fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.cssText = "position:fixed;top:-9999px;left:-9999px;opacity:0;";
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+    alert("결과가 클립보드에 복사되었습니다!");
+  } catch {
+    alert(`아래 텍스트를 직접 복사해 주세요:\n\n${text}`);
+  }
+  document.body.removeChild(ta);
 }
 
 /* ─────────────────────────────────────────
@@ -176,6 +275,6 @@ function initBackButton() {
 ───────────────────────────────────────── */
 document.addEventListener("DOMContentLoaded", () => {
   renderIntroActions();
-  initResultButtons();
   initBackButton();
+  initResultButtons();
 });

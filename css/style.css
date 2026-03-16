@@ -289,8 +289,172 @@ body {
 }
 
 /* ─────────────────────────────────────────
-   결과 화면
+   결과 화면 — 동적 컨테이너
 ───────────────────────────────────────── */
+#result-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 1. 헤더 카드 */
+.result__header {
+  background: var(--color-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 36px 24px 28px;
+  text-align: center;
+}
+
+.result__emoji {
+  font-size: 5rem;
+  line-height: 1;
+  margin-bottom: 14px;
+}
+
+.result__char-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
+.result__badges {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.badge--code {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: #fff;
+}
+
+.badge--mbti {
+  background: rgba(91, 79, 232, 0.1);
+  color: var(--color-primary);
+}
+
+/* 2. 한줄 소개 */
+.result__title {
+  background: var(--color-card);
+  border-radius: 16px;
+  padding: 16px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: center;
+  line-height: 1.65;
+  box-shadow: 0 2px 12px rgba(91, 79, 232, 0.07);
+}
+
+/* 3. 설명 텍스트 블록 */
+.result__description {
+  background: var(--color-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.result__description p {
+  font-size: 0.88rem;
+  color: var(--color-text);
+  line-height: 1.8;
+}
+
+.result__description p:first-child {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* 4. 축 요약 칩 */
+.result__axes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.axis-chip {
+  background: var(--color-card);
+  border: 1.5px solid rgba(91, 79, 232, 0.22);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(91, 79, 232, 0.06);
+  white-space: nowrap;
+}
+
+/* 5. 궁합 카드 */
+.result__chemistry {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chemistry-card {
+  background: var(--color-card);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 2px 12px rgba(91, 79, 232, 0.07);
+  border-left: 4px solid transparent;
+}
+
+.chemistry-card--best  { border-left-color: #48bb78; }
+.chemistry-card--worst { border-left-color: #fc8181; }
+
+.chemistry-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.chemistry-card__icon  { font-size: 1rem; flex-shrink: 0; }
+
+.chemistry-card__label {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  line-height: 1.4;
+}
+
+.chemistry-card__label strong {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.chemistry-card__reason {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  line-height: 1.7;
+  padding-left: 26px;
+}
+
+/* 버튼 영역 */
+.result__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+/* ── 하위 호환용 구 CSS (참조 제거됨, 무해하게 유지) ───── */
 .result__card {
   background: var(--color-card);
   border-radius: var(--radius-card);
@@ -363,5 +527,26 @@ body {
 
   .result__name {
     font-size: 1.75rem;
+  }
+
+  /* 결과 화면 — 태블릿 이상 */
+  .result__header {
+    padding: 44px 40px 36px;
+  }
+
+  .result__emoji {
+    font-size: 6rem;
+  }
+
+  .result__char-name {
+    font-size: 1.75rem;
+  }
+
+  .result__description {
+    padding: 28px 28px;
+  }
+
+  .result__description p {
+    font-size: 0.92rem;
   }
 }

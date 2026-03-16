@@ -53,17 +53,15 @@
   <!-- ────────────── 결과 화면 ────────────── -->
   <section id="screen-result" class="screen" style="display:none;">
     <div class="screen__inner">
-      <div class="result__card">
-        <div class="result__emoji" id="result-emoji">🎉</div>
-        <h2 class="result__type" id="result-type">결과 유형</h2>
-        <p class="result__name" id="result-name">캐릭터 이름</p>
-        <p class="result__desc" id="result-desc">결과 설명이 여기에 표시됩니다.</p>
-      </div>
+
+      <!-- renderResult(character)가 이 컨테이너를 동적으로 채웁니다 -->
+      <div id="result-content"></div>
 
       <div class="result__actions">
-        <button class="btn btn--primary" id="btn-share">결과 공유하기</button>
+        <button class="btn btn--primary" id="btn-copy">결과 복사하기</button>
         <button class="btn btn--outline" id="btn-retry">다시 테스트하기</button>
       </div>
+
     </div>
   </section>
 

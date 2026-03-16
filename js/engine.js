@@ -43,10 +43,10 @@ function _accumulateWeights(answers) {
 /**
  * 가중치 맵으로 4자리 코드를 결정한다.
  * 타이 브레이킹 규칙 (>=는 우측 승):
- *   swift > careful  → 'S'  else 'C'
- *   people > task    → 'P'  else 'T'
- *   flexible > structured → 'F' else 'S'
- *   idea > execution → 'I'  else 'E'
+ *   swift > careful          → 'S'  else 'C'
+ *   people > task            → 'P'  else 'T'
+ *   flexible > structured    → 'F'  else 'T'  (S 충돌 방지를 위해 structured = 'T')
+ *   idea > execution         → 'I'  else 'E'
  *
  * @param {{ swift:n, careful:n, ... }} w
  * @returns {string}  e.g. "SPFI"
@@ -54,7 +54,7 @@ function _accumulateWeights(answers) {
 function _weightsToCode(w) {
   const a1 = w.swift      > w.careful     ? 'S' : 'C';
   const a2 = w.people     > w.task        ? 'P' : 'T';
-  const a3 = w.flexible   > w.structured  ? 'F' : 'S';
+  const a3 = w.flexible   > w.structured  ? 'F' : 'T';
   const a4 = w.idea       > w.execution   ? 'I' : 'E';
   return a1 + a2 + a3 + a4;
 }
@@ -202,16 +202,17 @@ const Engine = (() => {
    *
    * @param {string} code  4자리 캐릭터 코드 e.g. 'SPFI'
    */
+  // 결과 화면 렌더링은 app.js의 renderResult(character)가 담당합니다.
+  // 이 함수는 하위 호환용으로만 유지합니다.
   function renderResult(code) {
     const char = CHARACTERS[code];
     if (!char) {
       console.error(`[Engine] renderResult: 코드 "${code}"에 해당하는 캐릭터가 없습니다.`);
       return;
     }
-    document.getElementById('result-emoji').textContent = char.emoji;
-    document.getElementById('result-type').textContent  = code;
-    document.getElementById('result-name').textContent  = char.name;
-    document.getElementById('result-desc').textContent  = char.desc;
+    if (typeof renderResult_app === 'function') {
+      renderResult_app(char);
+    }
   }
 
   return { renderQuestion, renderResult };
@@ -229,8 +230,8 @@ const Engine = (() => {
   const summary = getAxisSummary(allA);
 
   console.group('[Engine Dev Test]');
-  console.log('전체 A 결과 →', resultA);
-  console.log('전체 B 결과 →', resultB);
+  console.log('전체 A 결과 →', resultA);   // 기대: SPFI 번개 제비
+  console.log('전체 B 결과 →', resultB);   // 기대: CTTE 안정 거북이
   console.log('전체 A 축 요약 →', summary);
 
   // 유효성 테스트
