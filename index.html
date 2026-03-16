@@ -23,6 +23,19 @@
         <p class="intro__desc">10가지 질문으로 알아보는<br>나만의 편지 배달 스타일</p>
       </div>
 
+      <!-- 닉네임 입력 -->
+      <div class="intro__name-field">
+        <label class="intro__name-label" for="nickname-input">닉네임</label>
+        <input
+          type="text"
+          id="nickname-input"
+          placeholder="닉네임을 입력해 주세요"
+          maxlength="20"
+          autocomplete="off"
+        />
+        <p class="intro__name-error" id="nickname-error" role="alert"></p>
+      </div>
+
       <div class="intro__actions" id="intro-actions">
         <!-- app.js에서 버튼 동적 주입 -->
       </div>
@@ -59,12 +72,14 @@
 
       <div class="result__actions">
         <button class="btn btn--primary" id="btn-copy">결과 복사하기</button>
+        <button class="btn btn--navy"    id="btn-save-image">이미지로 저장</button>
         <button class="btn btn--outline" id="btn-retry">다시 테스트하기</button>
       </div>
 
     </div>
   </section>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/engine.js"></script>

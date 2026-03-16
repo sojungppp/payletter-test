@@ -3,7 +3,6 @@
 /**
  * app.js
  * 화면 전환 및 앱 전체 흐름 관리
- * Engine.renderQuestion / Engine.renderResult 의존 없이 자체 구현
  */
 
 /* ─────────────────────────────────────────
@@ -14,6 +13,7 @@ const appState = {
   currentQuestion: 0,
   answers:         [],   // ['A', 'B', ...]
   result:          null, // 최종 캐릭터 코드
+  nickname:        '',
 };
 
 const STORAGE_KEY = 'pl_result';
@@ -21,10 +21,6 @@ const STORAGE_KEY = 'pl_result';
 /* ─────────────────────────────────────────
    화면 전환 (fadeIn 재실행 포함)
 ───────────────────────────────────────── */
-/**
- * 모든 .screen을 숨기고 지정 화면만 표시 + fadeIn 애니메이션 재실행
- * @param {string} screenId  e.g. 'screen-intro'
- */
 function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach(el => {
     el.style.display = 'none';
@@ -35,7 +31,6 @@ function showScreen(screenId) {
   if (!target) { console.warn(`showScreen: "${screenId}" 요소를 찾을 수 없습니다.`); return; }
 
   target.style.display = 'flex';
-  // reflow → 애니메이션 재실행
   requestAnimationFrame(() => requestAnimationFrame(() => target.classList.add('screen--active')));
 
   appState.currentScreen = screenId.replace('screen-', '');
@@ -48,14 +43,12 @@ function renderIntroActions() {
   const container = document.getElementById('intro-actions');
   container.innerHTML = '';
 
-  // 항상 노출: 테스트 시작하기
   const btnStart = document.createElement('button');
   btnStart.className   = 'btn btn--primary';
   btnStart.textContent = '테스트 시작하기';
   btnStart.addEventListener('click', startTest);
   container.appendChild(btnStart);
 
-  // localStorage에 결과가 있을 때만 노출
   if (localStorage.getItem(STORAGE_KEY)) {
     const btnPrev = document.createElement('button');
     btnPrev.className   = 'btn btn--outline';
@@ -68,36 +61,25 @@ function renderIntroActions() {
 /* ─────────────────────────────────────────
    질문 화면 렌더링
 ───────────────────────────────────────── */
-/**
- * 질문 카드를 슬라이드 애니메이션으로 렌더링한다.
- *
- * @param {number}              index      0-based 질문 인덱스
- * @param {'forward'|'backward'} direction 전환 방향
- */
 function renderQuestion(index, direction = 'forward') {
   const total    = QUESTIONS.length;
   const question = QUESTIONS[index];
 
-  // ── 진행 표시 ──
   document.getElementById('question-counter').textContent =
     `Q${index + 1} / ${total}`;
   document.getElementById('progress-fill').style.width =
     `${(index / total) * 100}%`;
 
-  // ── 이전으로 버튼: Q1에서 disabled ──
   document.getElementById('btn-back').disabled = (index === 0);
 
-  // ── 새 카드 생성 ──
   const newCard = document.createElement('div');
   newCard.className = `question__card question__card--enter-${direction}`;
 
-  // 질문 텍스트
   const qText       = document.createElement('p');
   qText.className   = 'question__text';
   qText.textContent = question.question;
   newCard.appendChild(qText);
 
-  // 선택지 A / B
   const choicesDiv  = document.createElement('div');
   choicesDiv.className = 'question__choices';
 
@@ -110,10 +92,8 @@ function renderQuestion(index, direction = 'forward') {
       `<span class="choice-btn__text">${question.options[key].text}</span>`;
 
     btn.addEventListener('click', () => {
-      // 중복 클릭 방지
       choicesDiv.querySelectorAll('.choice-btn').forEach(b => (b.disabled = true));
       btn.classList.add('choice-btn--selected');
-      // 0.2초 강조 후 다음 단계
       setTimeout(() => handleAnswer(key), 200);
     });
 
@@ -121,12 +101,10 @@ function renderQuestion(index, direction = 'forward') {
   });
   newCard.appendChild(choicesDiv);
 
-  // ── 슬라이드 전환 ──
   const wrap    = document.getElementById('question-slide-wrap');
   const oldCard = wrap.querySelector('.question__card');
 
   if (oldCard) {
-    // 이전 카드를 absolute로 전환 후 슬라이드 아웃
     oldCard.style.width    = `${wrap.offsetWidth}px`;
     oldCard.style.position = 'absolute';
     oldCard.style.top      = '0';
@@ -141,11 +119,23 @@ function renderQuestion(index, direction = 'forward') {
    테스트 시작
 ───────────────────────────────────────── */
 function startTest() {
+  // 닉네임 유효성 검사
+  const nicknameInput = document.getElementById('nickname-input');
+  const nicknameError = document.getElementById('nickname-error');
+  const nickname      = nicknameInput.value.trim();
+
+  if (!nickname) {
+    nicknameError.textContent = '닉네임을 입력해 주세요.';
+    nicknameInput.focus();
+    return;
+  }
+
+  nicknameError.textContent = '';
+  appState.nickname        = nickname;
   appState.currentQuestion = 0;
   appState.answers         = [];
   appState.result          = null;
 
-  // 슬라이드 랩 초기화
   document.getElementById('question-slide-wrap').innerHTML = '';
 
   showScreen('screen-question');
@@ -164,7 +154,6 @@ function handleAnswer(choiceKey) {
     appState.currentQuestion = next;
     renderQuestion(next, 'forward');
   } else {
-    // 마지막 질문 완료: 프로그레스 바 100% 채운 뒤 결과로
     document.getElementById('progress-fill').style.width = '100%';
     setTimeout(finishTest, 300);
   }
@@ -173,13 +162,7 @@ function handleAnswer(choiceKey) {
 /* ─────────────────────────────────────────
    Supabase 결과 저장 (fire-and-forget)
 ───────────────────────────────────────── */
-/**
- * 결과 코드를 Supabase results 테이블에 저장한다.
- * config.js 미설정 시 조용히 스킵. 실패해도 UX에 영향 없음.
- * @param {string} code  e.g. 'SPFI'
- */
-async function saveResult(code) {
-  // config.js 미설정 시 스킵
+async function saveResult(code, nickname) {
   if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
 
   try {
@@ -191,7 +174,7 @@ async function saveResult(code) {
         'Content-Type':  'application/json',
         'Prefer':        'return=minimal',
       },
-      body: JSON.stringify({ result_code: code }),
+      body: JSON.stringify({ result_code: code, nickname }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
   } catch (err) {
@@ -208,13 +191,12 @@ function finishTest() {
 
   appState.result = character.code;
 
-  // Supabase 저장 (비동기 — 결과 렌더링 차단하지 않음)
-  saveResult(character.code);
+  saveResult(character.code, appState.nickname);
 
-  // localStorage 저장: { code, characterName, timestamp }
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
     code:          character.code,
     characterName: character.characterName,
+    nickname:      appState.nickname,
     timestamp:     Date.now(),
   }));
 
@@ -232,8 +214,9 @@ function showSavedResult() {
     const character = CHARACTERS[saved.code];
     if (!character) throw new Error('unknown code');
 
-    appState.result  = saved.code;
-    appState.answers = [];
+    appState.result   = saved.code;
+    appState.answers  = [];
+    appState.nickname = saved.nickname || '';
 
     renderResult(character);
     showScreen('screen-result');
@@ -247,23 +230,30 @@ function showSavedResult() {
 /* ─────────────────────────────────────────
    결과 화면 렌더링
 ───────────────────────────────────────── */
-/**
- * #result-content를 캐릭터 데이터로 채운다.
- * @param {Object} character  CHARACTERS 맵 항목
- */
 function renderResult(character) {
   const container = document.getElementById('result-content');
   container.innerHTML = '';
 
-  // 1. 헤더: 이모지 + 캐릭터명 + 코드 뱃지 + 유사 MBTI 뱃지
+  // 1. 헤더: 캐릭터 이미지 + 닉네임 + 캐릭터명 + 타입 뱃지
   const header = document.createElement('div');
   header.className = 'result__header';
+
+  const nicknameTag = appState.nickname
+    ? `<span class="result__nickname-tag">${appState.nickname}님의 결과</span>`
+    : '';
+
   header.innerHTML = `
-    <div class="result__emoji">${character.emoji}</div>
+    <img
+      class="result__char-img"
+      src="images/${encodeURIComponent(character.characterName)}.png"
+      alt="${character.characterName}"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+    />
+    <div class="result__emoji" style="display:none;">${character.emoji}</div>
+    ${nicknameTag}
     <p class="result__char-name">${character.characterName}</p>
     <div class="result__badges">
-      <span class="badge badge--code">${character.code}</span>
-      <span class="badge badge--mbti">유사 MBTI ${character.similarMBTI}</span>
+      <span class="badge badge--type">${character.axes[0]} · ${character.axes[1]}</span>
     </div>
   `;
   container.appendChild(header);
@@ -317,6 +307,37 @@ function renderResult(character) {
 }
 
 /* ─────────────────────────────────────────
+   이미지 저장
+───────────────────────────────────────── */
+async function saveAsImage() {
+  const btn = document.getElementById('btn-save-image');
+  btn.disabled    = true;
+  btn.textContent = '저장 중…';
+
+  try {
+    const el = document.getElementById('result-content');
+    const canvas = await html2canvas(el, {
+      backgroundColor: '#F0FAFA',
+      scale: 2,
+      useCORS: true,
+      logging: false,
+    });
+
+    const link      = document.createElement('a');
+    const charName  = CHARACTERS[appState.result]?.characterName || 'result';
+    link.download   = `payletter_${charName}.png`;
+    link.href       = canvas.toDataURL('image/png');
+    link.click();
+  } catch (err) {
+    console.error('[saveAsImage]', err);
+    alert('이미지 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '이미지로 저장';
+  }
+}
+
+/* ─────────────────────────────────────────
    버튼 이벤트 바인딩 (DOMContentLoaded 1회)
 ───────────────────────────────────────── */
 function _initButtons() {
@@ -334,6 +355,10 @@ function _initButtons() {
     appState.currentQuestion = 0;
     appState.answers         = [];
     appState.result          = null;
+    appState.nickname        = '';
+    // 닉네임 입력 초기화
+    const ni = document.getElementById('nickname-input');
+    if (ni) ni.value = '';
     showScreen('screen-intro');
     renderIntroActions();
   });
@@ -343,11 +368,11 @@ function _initButtons() {
     const char = CHARACTERS[appState.result];
     if (!char) return;
 
+    const nicknameStr = appState.nickname ? `${appState.nickname}님은 ` : '';
     const text =
-      `나는 페이레터 편지 배달 캐릭터 테스트 결과 [${char.characterName}]!\n` +
-      `유사 MBTI는 ${char.similarMBTI},\n` +
-      `한줄 소개는 '${char.title}'\n` +
-      `최고의 궁합은 ${char.chemistry.best.name}, 최악의 궁합은 ${char.chemistry.worst.name}!`;
+      `${nicknameStr}페이레터 캐릭터 테스트 결과 [${char.characterName}]!\n` +
+      `한줄 소개: '${char.title}'\n` +
+      `최고의 궁합은 ${char.chemistry.best.name}, 주의가 필요한 궁합은 ${char.chemistry.worst.name}!`;
 
     if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text)
@@ -356,6 +381,14 @@ function _initButtons() {
     } else {
       _fallbackCopy(text);
     }
+  });
+
+  // 이미지 저장
+  document.getElementById('btn-save-image').addEventListener('click', saveAsImage);
+
+  // 닉네임 입력 필드 Enter 키
+  document.getElementById('nickname-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startTest();
   });
 }
 

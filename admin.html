@@ -37,10 +37,7 @@
       gap: 16px;
     }
 
-    .auth-icon {
-      font-size: 3.5rem;
-      line-height: 1;
-    }
+    .auth-icon  { font-size: 3.5rem; line-height: 1; }
 
     .auth-title {
       font-size: 1.5rem;
@@ -65,7 +62,7 @@
     .auth-field input[type="password"] {
       width: 100%;
       padding: 14px 16px;
-      border: 2px solid rgba(91, 79, 232, 0.18);
+      border: 2px solid rgba(0, 183, 170, 0.20);
       border-radius: 12px;
       font-family: inherit;
       font-size: 1rem;
@@ -113,7 +110,7 @@
       gap: 12px;
       margin-bottom: 28px;
       padding-bottom: 20px;
-      border-bottom: 2px solid rgba(91, 79, 232, 0.12);
+      border-bottom: 2px solid rgba(0, 183, 170, 0.14);
     }
 
     .admin-header__left {
@@ -155,11 +152,11 @@
     }
 
     .admin-btn          { background: var(--color-primary); color: #fff; border: none; }
-    .admin-btn:hover    { background: #4a3ed4; }
+    .admin-btn:hover    { background: #009991; }
     .admin-btn--outline { background: transparent; color: var(--color-primary); border: 1.5px solid var(--color-primary); }
     .admin-btn--outline:hover { background: var(--color-primary); color: #fff; }
-    .admin-btn--ghost   { background: transparent; color: var(--color-muted); border: 1.5px solid rgba(91,79,232,0.2); }
-    .admin-btn--ghost:hover { background: rgba(91,79,232,0.06); color: var(--color-text); }
+    .admin-btn--ghost   { background: transparent; color: var(--color-muted); border: 1.5px solid rgba(0,183,170,0.22); }
+    .admin-btn--ghost:hover { background: rgba(0,183,170,0.08); color: var(--color-text); }
 
     /* ── 섹션 카드 ──────────────────────────── */
     .admin-section {
@@ -167,7 +164,7 @@
       border-radius: 20px;
       padding: 24px;
       margin-bottom: 20px;
-      box-shadow: 0 2px 16px rgba(91, 79, 232, 0.07);
+      box-shadow: 0 2px 16px rgba(0, 183, 170, 0.08);
     }
 
     .admin-section__title {
@@ -210,7 +207,7 @@
       align-items: center;
       gap: 12px;
       padding: 7px 0;
-      border-bottom: 1px solid rgba(91, 79, 232, 0.05);
+      border-bottom: 1px solid rgba(0, 183, 170, 0.07);
     }
 
     .bar-row:last-child { border-bottom: none; }
@@ -233,19 +230,9 @@
       color: var(--color-text);
     }
 
-    .bar-row__code {
-      font-size: 0.7rem;
-      color: var(--color-primary);
-      font-weight: 700;
-      background: rgba(91,79,232,0.08);
-      border-radius: 6px;
-      padding: 1px 5px;
-      flex-shrink: 0;
-    }
-
     .bar-row__track {
       height: 10px;
-      background: rgba(91, 79, 232, 0.1);
+      background: rgba(0, 183, 170, 0.12);
       border-radius: 999px;
       overflow: hidden;
     }
@@ -258,7 +245,7 @@
       transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .bar-row--zero .bar-row__fill { background: rgba(91,79,232,0.15); }
+    .bar-row--zero .bar-row__fill { background: rgba(0,183,170,0.15); }
     .bar-row--zero .bar-row__name { color: var(--color-muted); }
 
     .bar-row__stat {
@@ -278,7 +265,7 @@
     /* ── 4축 분포 ────────────────────────────── */
     .axis-row {
       padding: 12px 0;
-      border-bottom: 1px solid rgba(91, 79, 232, 0.05);
+      border-bottom: 1px solid rgba(0, 183, 170, 0.07);
     }
 
     .axis-row:last-child { border-bottom: none; }
@@ -306,7 +293,7 @@
       border-radius: 999px;
       overflow: hidden;
       display: flex;
-      background: rgba(91, 79, 232, 0.08);
+      background: rgba(0, 183, 170, 0.10);
     }
 
     .axis-row__fill--left {
@@ -333,6 +320,40 @@
       color: var(--color-muted);
     }
 
+    /* ── 최근 참여자 테이블 ──────────────────── */
+    .participants-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .participants-table th {
+      text-align: left;
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-muted);
+      border-bottom: 2px solid rgba(0, 183, 170, 0.12);
+    }
+
+    .participants-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(0, 183, 170, 0.07);
+      color: var(--color-text);
+    }
+
+    .participants-table tr:last-child td { border-bottom: none; }
+
+    .participants-table td:first-child { font-weight: 600; }
+
+    .participants-table__emoji { font-size: 1.1rem; }
+
+    .participants-table__date {
+      color: var(--color-muted);
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
     /* ── 상태 박스 (로딩 / 에러 / 빈 상태) ─── */
     .state-box {
       display: flex;
@@ -343,7 +364,7 @@
       padding: 64px 24px;
       background: var(--color-card);
       border-radius: 20px;
-      box-shadow: 0 2px 16px rgba(91, 79, 232, 0.07);
+      box-shadow: 0 2px 16px rgba(0, 183, 170, 0.08);
       text-align: center;
       color: var(--color-muted);
       font-size: 0.95rem;
@@ -358,7 +379,7 @@
     .spinner {
       width: 36px;
       height: 36px;
-      border: 3px solid rgba(91, 79, 232, 0.15);
+      border: 3px solid rgba(0, 183, 170, 0.18);
       border-top-color: var(--color-primary);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
@@ -375,6 +396,8 @@
       }
       .bar-row__name { font-size: 0.75rem; }
       .admin-header  { flex-direction: column; align-items: flex-start; }
+      .participants-table th:nth-child(3),
+      .participants-table td:nth-child(3) { display: none; }
     }
   </style>
 </head>
@@ -458,6 +481,12 @@
         <div class="admin-section">
           <p class="admin-section__title">4축 분포 요약</p>
           <div id="chart-axes"></div>
+        </div>
+
+        <!-- 4. 최근 참여자 -->
+        <div class="admin-section">
+          <p class="admin-section__title">최근 참여자 (최대 20명)</p>
+          <div id="list-recent"></div>
         </div>
 
       </div><!-- /dashboard-content -->

@@ -19,7 +19,6 @@ function checkAuth() {
     showDashboard();
     loadStats();
   }
-  // 인증 안 됐으면 #view-auth 기본 표시 (HTML 기본값)
 }
 
 function handleLogin() {
@@ -55,7 +54,6 @@ function showDashboard() {
    상태 박스 전환
 ───────────────────────────────────────── */
 function setDashboardState(state) {
-  // state: 'loading' | 'error' | 'empty' | 'content'
   document.getElementById('state-loading').style.display      = state === 'loading' ? 'flex'  : 'none';
   document.getElementById('state-error').style.display        = state === 'error'   ? 'flex'  : 'none';
   document.getElementById('state-empty').style.display        = state === 'empty'   ? 'flex'  : 'none';
@@ -66,12 +64,14 @@ function setDashboardState(state) {
    Supabase 데이터 조회
 ───────────────────────────────────────── */
 async function fetchStats() {
-  if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+  if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL' ||
+      !SUPABASE_KEY || SUPABASE_KEY === 'YOUR_SUPABASE_ANON_KEY') {
     return _devDummyData();
   }
 
+  // select=* 로 컬럼 존재 여부에 무관하게 조회 (nickname 컬럼 없어도 동작)
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/results?select=result_code`,
+    `${SUPABASE_URL}/rest/v1/results?select=*&order=created_at.desc`,
     {
       headers: {
         'apikey':        SUPABASE_KEY,
@@ -81,43 +81,44 @@ async function fetchStats() {
   );
 
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json(); // [{ result_code: 'SPFI' }, ...]
+  return res.json();
 }
 
 /** config 미설정 시 보여줄 더미 데이터 */
 function _devDummyData() {
-  const codes = Object.keys(CHARACTERS);
-  const rows  = [];
+  const codes     = Object.keys(CHARACTERS);
+  const nicknames = ['민준', '서연', '지호', '수빈', '현우', '예린', '태양', '나연', '도현', '지은'];
+  const rows      = [];
   codes.forEach((code, i) => {
     const count = Math.max(0, 14 - i + Math.round(Math.random() * 5));
-    for (let j = 0; j < count; j++) rows.push({ result_code: code });
+    for (let j = 0; j < count; j++) {
+      rows.push({
+        result_code: code,
+        nickname:    nicknames[(i + j) % nicknames.length],
+        created_at:  new Date(Date.now() - (i * count + j) * 3_600_000).toISOString(),
+      });
+    }
   });
-  return rows;
+  return rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 }
 
 /* ─────────────────────────────────────────
    통계 집계
 ───────────────────────────────────────── */
-/**
- * @param  {Array<{result_code: string}>} rows
- * @returns {{ total, byCode, axes }}
- */
 function aggregateStats(rows) {
   const total = rows.length;
 
-  // 캐릭터별 카운트 (모든 키 0으로 초기화)
   const byCode = {};
   Object.keys(CHARACTERS).forEach(k => (byCode[k] = 0));
   rows.forEach(r => {
     if (byCode[r.result_code] !== undefined) byCode[r.result_code]++;
   });
 
-  // 4축 분포
   const axes = {
-    speed:    { left: 'S (신속형)',      right: 'C (신중형)',   leftScore: 0, rightScore: 0 },
-    relation: { left: 'P (사람형)',      right: 'T (과제형)',   leftScore: 0, rightScore: 0 },
-    style:    { left: 'F (유연형)',      right: 'T (구조형)',   leftScore: 0, rightScore: 0 },
-    thinking: { left: 'I (아이디어형)', right: 'E (실행형)',   leftScore: 0, rightScore: 0 },
+    speed:    { left: '신속형',    right: '신중형',   leftScore: 0, rightScore: 0 },
+    relation: { left: '사람형',    right: '과제형',   leftScore: 0, rightScore: 0 },
+    style:    { left: '유연형',    right: '구조형',   leftScore: 0, rightScore: 0 },
+    thinking: { left: '아이디어형', right: '실행형',  leftScore: 0, rightScore: 0 },
   };
 
   Object.entries(byCode).forEach(([code, count]) => {
@@ -158,7 +159,6 @@ function renderCharacterChart(byCode, total) {
       <div class="bar-row__meta">
         <span class="bar-row__emoji">${char.emoji}</span>
         <span class="bar-row__name">${char.characterName}</span>
-        <span class="bar-row__code">${code}</span>
       </div>
       <div class="bar-row__track">
         <div class="bar-row__fill" data-pct="${barPct}"></div>
@@ -170,7 +170,6 @@ function renderCharacterChart(byCode, total) {
     container.appendChild(row);
   });
 
-  // rAF로 width 적용 → CSS transition 동작
   requestAnimationFrame(() => {
     container.querySelectorAll('.bar-row__fill').forEach(el => {
       el.style.width = `${el.dataset.pct}%`;
@@ -224,6 +223,57 @@ function renderAxesChart(axes, total) {
 }
 
 /* ─────────────────────────────────────────
+   최근 참여자 목록
+───────────────────────────────────────── */
+function renderRecentList(rows) {
+  const container = document.getElementById('list-recent');
+  container.innerHTML = '';
+
+  const recent = rows.slice(0, 20);
+
+  if (recent.length === 0) {
+    container.innerHTML = '<p style="color:var(--color-muted); font-size:0.85rem;">참여자 기록이 없습니다.</p>';
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'participants-table';
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>닉네임</th>
+        <th>캐릭터</th>
+        <th>참여 일시</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  `;
+
+  const tbody = table.querySelector('tbody');
+  recent.forEach(row => {
+    const char = CHARACTERS[row.result_code];
+    if (!char) return;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${row.nickname || '—'}</td>
+      <td><span class="participants-table__emoji">${char.emoji}</span> ${char.characterName}</td>
+      <td class="participants-table__date">${_formatDate(row.created_at)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  container.appendChild(table);
+}
+
+function _formatDate(isoStr) {
+  if (!isoStr) return '—';
+  const d = new Date(isoStr);
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}.${p(d.getMonth()+1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+/* ─────────────────────────────────────────
    대시보드 렌더링
 ───────────────────────────────────────── */
 function renderDashboard(rows) {
@@ -231,6 +281,7 @@ function renderDashboard(rows) {
   document.getElementById('total-count').textContent = total;
   renderCharacterChart(byCode, total);
   renderAxesChart(axes, total);
+  renderRecentList(rows);
   setDashboardState('content');
 }
 
