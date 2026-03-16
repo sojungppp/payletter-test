@@ -4,144 +4,467 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>페이레터 진단 테스트 - 관리자</title>
+  <title>페이레터 진단 — 관리자</title>
   <link rel="stylesheet" href="css/style.css" />
   <style>
-    /* 관리자 전용 추가 스타일 */
-    .admin-layout {
-      max-width: 900px;
-      margin: 0 auto;
+    /* ── 공통 기반 ─────────────────────────── */
+    body {
+      background: var(--color-bg);
+      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+      color: var(--color-text);
+      min-height: 100vh;
+    }
+
+    /* ── 패스워드 인증 화면 ─────────────────── */
+    #view-auth {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       padding: 24px 16px;
     }
+
+    .auth-card {
+      background: var(--color-card);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      padding: 48px 36px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .auth-icon {
+      font-size: 3.5rem;
+      line-height: 1;
+    }
+
+    .auth-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--color-text);
+    }
+
+    .auth-subtitle {
+      font-size: 0.875rem;
+      color: var(--color-muted);
+      margin-top: -8px;
+    }
+
+    .auth-field {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .auth-field input[type="password"] {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid rgba(91, 79, 232, 0.18);
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--color-text);
+      background: var(--color-bg);
+      outline: none;
+      transition: border-color 0.2s;
+      touch-action: manipulation;
+    }
+
+    .auth-field input[type="password"]:focus {
+      border-color: var(--color-primary);
+      background: #fff;
+    }
+
+    .auth-error {
+      font-size: 0.82rem;
+      color: #e53e3e;
+      min-height: 18px;
+      font-weight: 500;
+    }
+
+    .auth-back {
+      font-size: 0.82rem;
+      color: var(--color-muted);
+      text-decoration: none;
+      margin-top: 4px;
+      transition: color 0.2s;
+    }
+
+    .auth-back:hover { color: var(--color-primary); }
+
+    /* ── 대시보드 레이아웃 ──────────────────── */
+    .admin-layout {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 28px 16px 64px;
+    }
+
     .admin-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 32px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid var(--color-primary);
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid rgba(91, 79, 232, 0.12);
     }
-    .admin-header h1 {
-      font-size: 1.4rem;
-      color: var(--color-primary);
-    }
-    .admin-nav {
+
+    .admin-header__left {
       display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .admin-logo { font-size: 1.5rem; }
+
+    .admin-header__left h1 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--color-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .admin-header__right {
+      display: flex;
+      align-items: center;
       gap: 8px;
+      flex-wrap: wrap;
     }
-    .admin-nav a {
-      padding: 8px 16px;
-      border-radius: 8px;
+
+    /* 관리자 버튼 (공통) */
+    .admin-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
       text-decoration: none;
-      font-size: 0.875rem;
-      background: var(--color-bg);
-      color: var(--color-text);
-      transition: background 0.2s;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      touch-action: manipulation;
     }
-    .admin-nav a:hover,
-    .admin-nav a.active {
-      background: var(--color-primary);
-      color: #fff;
-    }
+
+    .admin-btn          { background: var(--color-primary); color: #fff; border: none; }
+    .admin-btn:hover    { background: #4a3ed4; }
+    .admin-btn--outline { background: transparent; color: var(--color-primary); border: 1.5px solid var(--color-primary); }
+    .admin-btn--outline:hover { background: var(--color-primary); color: #fff; }
+    .admin-btn--ghost   { background: transparent; color: var(--color-muted); border: 1.5px solid rgba(91,79,232,0.2); }
+    .admin-btn--ghost:hover { background: rgba(91,79,232,0.06); color: var(--color-text); }
+
+    /* ── 섹션 카드 ──────────────────────────── */
     .admin-section {
       background: var(--color-card);
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 2px 12px rgba(91, 79, 232, 0.08);
+      margin-bottom: 20px;
+      box-shadow: 0 2px 16px rgba(91, 79, 232, 0.07);
     }
-    .admin-section h2 {
+
+    .admin-section__title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 20px;
+    }
+
+    /* ── 총 참여자 카드 ─────────────────────── */
+    .total-card {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .total-card__num {
+      font-size: 3.5rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .total-card__label {
       font-size: 1.1rem;
-      margin-bottom: 16px;
+      font-weight: 600;
+      color: var(--color-muted);
+    }
+
+    /* ── 막대 차트 ──────────────────────────── */
+    .bar-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(91, 79, 232, 0.05);
+    }
+
+    .bar-row:last-child { border-bottom: none; }
+
+    .bar-row__meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .bar-row__emoji { font-size: 1.1rem; flex-shrink: 0; }
+
+    .bar-row__name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       color: var(--color-text);
     }
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 16px;
-    }
-    .stat-card {
-      background: var(--color-bg);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-    }
-    .stat-card__value {
-      font-size: 2rem;
-      font-weight: 700;
+
+    .bar-row__code {
+      font-size: 0.7rem;
       color: var(--color-primary);
+      font-weight: 700;
+      background: rgba(91,79,232,0.08);
+      border-radius: 6px;
+      padding: 1px 5px;
+      flex-shrink: 0;
     }
-    .stat-card__label {
+
+    .bar-row__track {
+      height: 10px;
+      background: rgba(91, 79, 232, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-row__fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+      border-radius: 999px;
+      transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .bar-row--zero .bar-row__fill { background: rgba(91,79,232,0.15); }
+    .bar-row--zero .bar-row__name { color: var(--color-muted); }
+
+    .bar-row__stat {
       font-size: 0.8rem;
-      color: var(--color-muted);
-      margin-top: 4px;
+      font-weight: 700;
+      color: var(--color-text);
+      white-space: nowrap;
+      text-align: right;
+      min-width: 64px;
     }
-    #result-table {
-      width: 100%;
-      border-collapse: collapse;
+
+    .bar-row__pct {
+      font-weight: 400;
+      color: var(--color-muted);
+    }
+
+    /* ── 4축 분포 ────────────────────────────── */
+    .axis-row {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(91, 79, 232, 0.05);
+    }
+
+    .axis-row:last-child { border-bottom: none; }
+
+    .axis-row__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .axis-row__label {
       font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--color-text);
     }
-    #result-table th,
-    #result-table td {
-      text-align: left;
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--color-bg);
-    }
-    #result-table th {
+
+    .axis-row__sides {
+      font-size: 0.78rem;
       color: var(--color-muted);
-      font-weight: 600;
+    }
+
+    .axis-row__bar {
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      display: flex;
+      background: rgba(91, 79, 232, 0.08);
+    }
+
+    .axis-row__fill--left {
+      height: 100%;
+      width: 0;
+      background: var(--color-primary);
+      border-radius: 999px 0 0 999px;
+      transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .axis-row__fill--right {
+      height: 100%;
+      width: 0;
+      background: var(--color-secondary);
+      border-radius: 0 999px 999px 0;
+      transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
+    }
+
+    .axis-row__labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 0.75rem;
+      color: var(--color-muted);
+    }
+
+    /* ── 상태 박스 (로딩 / 에러 / 빈 상태) ─── */
+    .state-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 64px 24px;
+      background: var(--color-card);
+      border-radius: 20px;
+      box-shadow: 0 2px 16px rgba(91, 79, 232, 0.07);
+      text-align: center;
+      color: var(--color-muted);
+      font-size: 0.95rem;
+    }
+
+    .state-empty__text {
+      font-size: 1.1rem;
+      color: var(--color-muted);
+    }
+
+    /* ── 스피너 ──────────────────────────────── */
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(91, 79, 232, 0.15);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── 반응형 ──────────────────────────────── */
+    @media (max-width: 520px) {
+      .bar-row {
+        grid-template-columns: 1fr 1.5fr auto;
+        gap: 8px;
+      }
+      .bar-row__name { font-size: 0.75rem; }
+      .admin-header  { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
-<body style="background: var(--color-bg); font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;">
+<body>
 
-  <div class="admin-layout">
-    <header class="admin-header">
-      <h1>🛠 Payletter 진단 관리자</h1>
-      <nav class="admin-nav">
-        <a href="index.html">← 테스트 보기</a>
-        <a href="admin.html" class="active">대시보드</a>
-      </nav>
-    </header>
+  <!-- ────────────── 패스워드 인증 화면 ────────────── -->
+  <div id="view-auth">
+    <div class="auth-card">
+      <div class="auth-icon">🔐</div>
+      <h1 class="auth-title">관리자 입장</h1>
+      <p class="auth-subtitle">Payletter 진단 테스트 관리자 페이지입니다.</p>
 
-    <!-- 통계 요약 -->
-    <div class="admin-section">
-      <h2>통계 요약</h2>
-      <div class="stat-grid" id="stat-grid">
-        <!-- admin.js에서 동적 생성 -->
+      <div class="auth-field">
+        <input
+          type="password"
+          id="pw-input"
+          placeholder="패스워드를 입력해 주세요"
+          autocomplete="current-password"
+        />
+        <button class="btn btn--primary" id="btn-auth">입장하기</button>
       </div>
-    </div>
 
-    <!-- 결과 유형별 분포 -->
-    <div class="admin-section">
-      <h2>결과 유형별 분포</h2>
-      <table id="result-table">
-        <thead>
-          <tr>
-            <th>유형</th>
-            <th>캐릭터</th>
-            <th>응답 수</th>
-            <th>비율</th>
-          </tr>
-        </thead>
-        <tbody id="result-table-body">
-          <!-- admin.js에서 동적 생성 -->
-        </tbody>
-      </table>
-    </div>
-
-    <!-- 데이터 관리 -->
-    <div class="admin-section">
-      <h2>데이터 관리</h2>
-      <div style="display:flex; gap:12px; flex-wrap:wrap;">
-        <button class="btn btn--outline" id="btn-export">JSON 내보내기</button>
-        <button class="btn btn--outline" id="btn-clear" style="color:#e53e3e; border-color:#e53e3e;">
-          로컬 데이터 초기화
-        </button>
-      </div>
+      <p class="auth-error" id="auth-error" role="alert"></p>
+      <a href="index.html" class="auth-back">← 테스트 페이지로 돌아가기</a>
     </div>
   </div>
 
+  <!-- ────────────── 대시보드 (인증 후 표시) ────────────── -->
+  <div id="view-dashboard" style="display:none;">
+    <div class="admin-layout">
+
+      <header class="admin-header">
+        <div class="admin-header__left">
+          <span class="admin-logo">✉️</span>
+          <h1>Payletter 진단 관리자</h1>
+        </div>
+        <div class="admin-header__right">
+          <button id="btn-refresh" class="admin-btn">⟳ 새로고침</button>
+          <a href="index.html" class="admin-btn admin-btn--outline">← 테스트 보기</a>
+          <button id="btn-logout" class="admin-btn admin-btn--ghost">로그아웃</button>
+        </div>
+      </header>
+
+      <!-- 로딩 -->
+      <div id="state-loading" class="state-box">
+        <div class="spinner"></div>
+        <p>데이터를 불러오는 중…</p>
+      </div>
+
+      <!-- 에러 -->
+      <div id="state-error" class="state-box" style="display:none;">
+        <p>⚠️ 데이터를 불러오지 못했습니다.</p>
+        <button id="btn-retry" class="admin-btn">다시 시도</button>
+      </div>
+
+      <!-- 빈 상태 -->
+      <div id="state-empty" class="state-box" style="display:none;">
+        <p class="state-empty__text">아직 참여자가 없습니다 🐾</p>
+        <p style="font-size:0.82rem;">테스트를 완료한 사용자가 생기면 통계가 표시됩니다.</p>
+      </div>
+
+      <!-- 대시보드 콘텐츠 -->
+      <div id="dashboard-content" style="display:none;">
+
+        <!-- 1. 총 참여자 -->
+        <div class="admin-section">
+          <p class="admin-section__title">총 참여자</p>
+          <div class="total-card">
+            <span class="total-card__num" id="total-count">0</span>
+            <span class="total-card__label">명 참여</span>
+          </div>
+        </div>
+
+        <!-- 2. 캐릭터별 분포 -->
+        <div class="admin-section">
+          <p class="admin-section__title">캐릭터별 분포 (응답 수 내림차순)</p>
+          <div id="chart-characters"></div>
+        </div>
+
+        <!-- 3. 4축 분포 -->
+        <div class="admin-section">
+          <p class="admin-section__title">4축 분포 요약</p>
+          <div id="chart-axes"></div>
+        </div>
+
+      </div><!-- /dashboard-content -->
+    </div><!-- /admin-layout -->
+  </div><!-- /view-dashboard -->
+
+  <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/admin.js"></script>
 </body>

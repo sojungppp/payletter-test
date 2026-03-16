@@ -171,6 +171,35 @@ function handleAnswer(choiceKey) {
 }
 
 /* ─────────────────────────────────────────
+   Supabase 결과 저장 (fire-and-forget)
+───────────────────────────────────────── */
+/**
+ * 결과 코드를 Supabase results 테이블에 저장한다.
+ * config.js 미설정 시 조용히 스킵. 실패해도 UX에 영향 없음.
+ * @param {string} code  e.g. 'SPFI'
+ */
+async function saveResult(code) {
+  // config.js 미설정 시 스킵
+  if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/results`, {
+      method: 'POST',
+      headers: {
+        'apikey':        SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type':  'application/json',
+        'Prefer':        'return=minimal',
+      },
+      body: JSON.stringify({ result_code: code }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  } catch (err) {
+    console.error('[saveResult] 결과 저장 실패:', err);
+  }
+}
+
+/* ─────────────────────────────────────────
    테스트 완료 → 결과 저장 + 렌더링
 ───────────────────────────────────────── */
 function finishTest() {
@@ -179,7 +208,10 @@ function finishTest() {
 
   appState.result = character.code;
 
-  // 요청 스펙: { code, characterName, timestamp }
+  // Supabase 저장 (비동기 — 결과 렌더링 차단하지 않음)
+  saveResult(character.code);
+
+  // localStorage 저장: { code, characterName, timestamp }
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
     code:          character.code,
     characterName: character.characterName,
