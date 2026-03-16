@@ -1,6 +1,6 @@
 <!-- Created: 2026-03-16 -->
 
-# 페이레터 캐릭터 진단 테스트
+# [페이레터 캐릭터 진단 테스트](https://69b7da1b1bdc2b0008391dd2--taupe-taiyaki-ec73ab.netlify.app/)
 
 > Payletter 브랜드 MBTI 스타일 캐릭터 진단 웹 서비스
 
@@ -9,6 +9,22 @@
 ---
 
 ## 서비스 소개
+
+### 사용자 화면
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c1ccd107-af28-4bff-be35-c41e90ba50b2" style="height:400px;">
+  <img src="https://github.com/user-attachments/assets/6a6f740e-683d-4dcb-993a-21d8647f0d2b" style="height:400px;">
+  <img src="https://github.com/user-attachments/assets/6e05717f-cd8c-40c4-8f16-2fb7ebf53d49" style="height:400px;">
+</p>
+
+### 관리자 화면
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f8f01406-303b-441b-88fd-e6e8cd0ed67a" width="32%">
+  <img src="https://github.com/user-attachments/assets/41ccac25-301d-47ea-890b-98378fcd9d6a" width="32%">
+  <img src="https://github.com/user-attachments/assets/eb7ece97-b905-42ae-8592-fc7a05934cf3" width="32%">
+</p>
+
 
 | 항목 | 내용 |
 |------|------|
