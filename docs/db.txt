@@ -1,0 +1,21 @@
+drop table results
+
+create table results (
+  id          bigserial primary key,
+  result_code text        not null,
+  nickname    text,
+  created_at  timestamptz not null default now()
+);
+
+-- 익명 사용자 INSERT 허용 (RLS 정책)
+alter table results enable row level security;
+
+create policy "allow anon insert"
+  on results for insert
+  to anon
+  with check (true);
+
+create policy "allow anon select"
+  on results for select
+  to anon
+  using (true);
