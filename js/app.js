@@ -81,15 +81,9 @@ function startTest() {
   Engine.renderQuestion(appState.currentQuestion, handleAnswer);
 }
 
-function handleAnswer(choiceIndex) {
-  const question = QUESTIONS[appState.currentQuestion];
-  const choice   = question.choices[choiceIndex];
-
-  appState.answers.push({
-    questionId:  question.id,
-    choiceIndex,
-    scores:      choice.scores,
-  });
+// choiceKey: 'A' | 'B'
+function handleAnswer(choiceKey) {
+  appState.answers.push(choiceKey);
 
   const next = appState.currentQuestion + 1;
 
@@ -102,17 +96,18 @@ function handleAnswer(choiceIndex) {
 }
 
 function finishTest() {
-  const mbtiCode   = Engine.resolveResult(appState.answers);
-  appState.result  = mbtiCode;
+  const character = calculateResult(appState.answers);
+  if (!character) return;
 
-  // 결과 저장
+  appState.result = character.code;
+
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    mbti:      mbtiCode,
+    code:      character.code,
     answers:   appState.answers,
     timestamp: Date.now(),
   }));
 
-  Engine.renderResult(mbtiCode);
+  Engine.renderResult(character.code);
   showScreen("screen-result");
 }
 
@@ -122,10 +117,10 @@ function finishTest() {
 function showSavedResult() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (!saved || !saved.mbti) throw new Error("invalid");
-    appState.result  = saved.mbti;
+    if (!saved || !saved.code) throw new Error("invalid");
+    appState.result  = saved.code;
     appState.answers = saved.answers || [];
-    Engine.renderResult(saved.mbti);
+    Engine.renderResult(saved.code);
     showScreen("screen-result");
   } catch {
     localStorage.removeItem(STORAGE_KEY);
@@ -144,9 +139,9 @@ function initResultButtons() {
   });
 
   document.getElementById("btn-share").addEventListener("click", () => {
-    const mbti = appState.result;
-    const data = RESULTS[mbti];
-    const text = `나는 페이레터 ${mbti} 유형 — "${data?.name}" 🎉\n결제 성향 테스트 해보기: ${location.href}`;
+    const code = appState.result;
+    const char = CHARACTERS[code];
+    const text = `나는 페이레터 ${code} 유형 — "${char?.name}" 🎉\n결제 성향 테스트 해보기: ${location.href}`;
 
     if (navigator.share) {
       navigator.share({ title: "페이레터 캐릭터 진단", text }).catch(() => {});
