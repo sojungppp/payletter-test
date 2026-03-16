@@ -18,9 +18,9 @@
       </div>
 
       <div class="intro__hero">
-        <div class="hero-emoji">🧩</div>
+        <div class="hero-emoji">✉️</div>
         <h1 class="intro__title">나는 어떤<br>페이레터 캐릭터일까?</h1>
-        <p class="intro__desc">12가지 질문으로 알아보는<br>나의 결제 성향 MBTI</p>
+        <p class="intro__desc">10가지 질문으로 알아보는<br>나만의 편지 배달 스타일</p>
       </div>
 
       <div class="intro__actions" id="intro-actions">
@@ -32,21 +32,21 @@
   <!-- ────────────── 질문 화면 ────────────── -->
   <section id="screen-question" class="screen" style="display:none;">
     <div class="screen__inner">
+
+      <!-- 진행 표시 헤더 -->
       <header class="question__header">
-        <button class="btn-icon" id="btn-back" aria-label="이전으로">←</button>
+        <span class="question__counter" id="question-counter">Q1 / 10</span>
         <div class="progress-bar">
           <div class="progress-bar__fill" id="progress-fill"></div>
         </div>
-        <span class="question__counter" id="question-counter">1 / 12</span>
       </header>
 
-      <div class="question__body">
-        <p class="question__text" id="question-text">질문 텍스트가 여기에 표시됩니다.</p>
-      </div>
+      <!-- 질문 + 선택지 슬라이드 영역: renderQuestion()이 .question__card를 주입 -->
+      <div class="question__slide-wrap" id="question-slide-wrap"></div>
 
-      <div class="question__choices" id="question-choices">
-        <!-- engine.js에서 동적 생성 -->
-      </div>
+      <!-- 하단 이전으로 버튼 (Q1에서 disabled) -->
+      <button class="btn btn--ghost" id="btn-back" disabled>← 이전으로</button>
+
     </div>
   </section>
 

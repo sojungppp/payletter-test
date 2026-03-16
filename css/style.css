@@ -27,6 +27,12 @@
   padding: 0;
 }
 
+/* 모바일 300ms 탭 딜레이 제거 */
+button, a, input, select, textarea,
+.btn, .choice-btn, .btn-icon {
+  touch-action: manipulation;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }
@@ -201,10 +207,21 @@ body {
 /* ─────────────────────────────────────────
    질문 화면
 ───────────────────────────────────────── */
+
+/* 진행 표시 헤더: [카운터] [프로그레스바] */
 .question__header {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.question__counter {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  white-space: nowrap;
+  min-width: 52px;
+  flex-shrink: 0;
 }
 
 .progress-bar {
@@ -220,34 +237,63 @@ body {
   background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
   border-radius: 999px;
   width: 0%;
-  transition: width 0.4s ease;
+  transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.question__counter {
-  font-size: 0.8rem;
-  color: var(--color-muted);
-  white-space: nowrap;
-  min-width: 40px;
-  text-align: right;
+/* ── 슬라이드 래퍼 ─────────────────────── */
+.question__slide-wrap {
+  position: relative;
+  overflow: hidden;
+  min-height: 300px;   /* 카드 교체 중 레이아웃 점프 방지 */
 }
 
-.question__body {
+/* ── 질문 카드 ─────────────────────────── */
+.question__card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 앞으로 이동: 새 카드는 오른쪽에서 등장 */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(52px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+/* 뒤로 이동: 새 카드는 왼쪽에서 등장 */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-52px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+/* 앞으로 이동: 이전 카드는 왼쪽으로 퇴장 */
+@keyframes slideOutLeft {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-52px); }
+}
+/* 뒤로 이동: 이전 카드는 오른쪽으로 퇴장 */
+@keyframes slideOutRight {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(52px); }
+}
+
+.question__card--enter-forward  { animation: slideInRight  0.28s ease forwards; }
+.question__card--enter-backward { animation: slideInLeft   0.28s ease forwards; }
+.question__card--exit-forward   { animation: slideOutLeft  0.22s ease forwards; pointer-events: none; }
+.question__card--exit-backward  { animation: slideOutRight 0.22s ease forwards; pointer-events: none; }
+
+/* ── 질문 텍스트 ────────────────────────── */
+.question__text {
   background: var(--color-card);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
-  padding: 32px 24px;
-  min-height: 120px;
-  display: flex;
-  align-items: center;
-}
-
-.question__text {
+  padding: 28px 24px;
   font-size: 1.15rem;
   font-weight: 600;
-  line-height: 1.6;
+  line-height: 1.65;
   letter-spacing: -0.02em;
+  color: var(--color-text);
 }
 
+/* ── 선택지 ─────────────────────────────── */
 .question__choices {
   display: flex;
   flex-direction: column;
@@ -256,36 +302,97 @@ body {
 
 .choice-btn {
   width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
   background: var(--color-card);
   border: 2px solid transparent;
   border-radius: 16px;
   padding: 16px 20px;
   font-family: inherit;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--color-text);
   cursor: pointer;
   text-align: left;
   box-shadow: 0 2px 12px rgba(91, 79, 232, 0.07);
-  transition: border-color var(--transition), background var(--transition), transform var(--transition), box-shadow var(--transition);
-  line-height: 1.5;
+  transition:
+    border-color var(--transition),
+    background   var(--transition),
+    transform    var(--transition),
+    box-shadow   var(--transition);
 }
 
-.choice-btn:hover {
+.choice-btn:hover:not(:disabled) {
   border-color: var(--color-primary);
   background: rgba(91, 79, 232, 0.04);
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(91, 79, 232, 0.14);
 }
 
-.choice-btn:active {
+.choice-btn:active:not(:disabled) {
   transform: translateY(0);
   background: rgba(91, 79, 232, 0.08);
+}
+
+.choice-btn:disabled {
+  cursor: default;
+}
+
+/* A / B 키 레이블 */
+.choice-btn__key {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(91, 79, 232, 0.09);
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition), color var(--transition);
+}
+
+.choice-btn__text {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text);
+  line-height: 1.55;
 }
 
 .choice-btn--selected {
   border-color: var(--color-primary);
   background: rgba(91, 79, 232, 0.06);
+}
+
+.choice-btn--selected .choice-btn__key {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ── 하단 이전으로 버튼 ─────────────────── */
+.btn--ghost {
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  transition: color var(--transition), background var(--transition);
+  align-self: center;
+}
+
+.btn--ghost:hover:not(:disabled) {
+  color: var(--color-text);
+  background: rgba(91, 79, 232, 0.06);
+}
+
+.btn--ghost:disabled {
+  opacity: 0.25;
+  cursor: default;
 }
 
 /* ─────────────────────────────────────────
@@ -513,12 +620,13 @@ body {
     padding: 48px 40px;
   }
 
-  .question__body {
-    padding: 36px 32px;
-  }
-
   .question__text {
     font-size: 1.2rem;
+    padding: 32px 32px;
+  }
+
+  .question__slide-wrap {
+    min-height: 320px;
   }
 
   .result__card {
