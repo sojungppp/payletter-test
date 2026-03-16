@@ -1,0 +1,148 @@
+<!-- Created: 2026-03-16 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>페이레터 진단 테스트 - 관리자</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* 관리자 전용 추가 스타일 */
+    .admin-layout {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--color-primary);
+    }
+    .admin-header h1 {
+      font-size: 1.4rem;
+      color: var(--color-primary);
+    }
+    .admin-nav {
+      display: flex;
+      gap: 8px;
+    }
+    .admin-nav a {
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.875rem;
+      background: var(--color-bg);
+      color: var(--color-text);
+      transition: background 0.2s;
+    }
+    .admin-nav a:hover,
+    .admin-nav a.active {
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .admin-section {
+      background: var(--color-card);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 12px rgba(91, 79, 232, 0.08);
+    }
+    .admin-section h2 {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      color: var(--color-text);
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+    }
+    .stat-card {
+      background: var(--color-bg);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-card__value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--color-primary);
+    }
+    .stat-card__label {
+      font-size: 0.8rem;
+      color: var(--color-muted);
+      margin-top: 4px;
+    }
+    #result-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    #result-table th,
+    #result-table td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--color-bg);
+    }
+    #result-table th {
+      color: var(--color-muted);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body style="background: var(--color-bg); font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;">
+
+  <div class="admin-layout">
+    <header class="admin-header">
+      <h1>🛠 Payletter 진단 관리자</h1>
+      <nav class="admin-nav">
+        <a href="index.html">← 테스트 보기</a>
+        <a href="admin.html" class="active">대시보드</a>
+      </nav>
+    </header>
+
+    <!-- 통계 요약 -->
+    <div class="admin-section">
+      <h2>통계 요약</h2>
+      <div class="stat-grid" id="stat-grid">
+        <!-- admin.js에서 동적 생성 -->
+      </div>
+    </div>
+
+    <!-- 결과 유형별 분포 -->
+    <div class="admin-section">
+      <h2>결과 유형별 분포</h2>
+      <table id="result-table">
+        <thead>
+          <tr>
+            <th>유형</th>
+            <th>캐릭터</th>
+            <th>응답 수</th>
+            <th>비율</th>
+          </tr>
+        </thead>
+        <tbody id="result-table-body">
+          <!-- admin.js에서 동적 생성 -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 데이터 관리 -->
+    <div class="admin-section">
+      <h2>데이터 관리</h2>
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button class="btn btn--outline" id="btn-export">JSON 내보내기</button>
+        <button class="btn btn--outline" id="btn-clear" style="color:#e53e3e; border-color:#e53e3e;">
+          로컬 데이터 초기화
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

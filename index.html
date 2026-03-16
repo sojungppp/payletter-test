@@ -1,0 +1,74 @@
+<!-- Created: 2026-03-16 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="페이레터 MBTI 스타일 캐릭터 진단 테스트" />
+  <title>페이레터 캐릭터 진단 테스트</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ────────────── 인트로 화면 ────────────── -->
+  <section id="screen-intro" class="screen screen--active">
+    <div class="screen__inner">
+      <div class="intro__logo">
+        <span class="logo-text">Payletter</span>
+      </div>
+
+      <div class="intro__hero">
+        <div class="hero-emoji">🧩</div>
+        <h1 class="intro__title">나는 어떤<br>페이레터 캐릭터일까?</h1>
+        <p class="intro__desc">12가지 질문으로 알아보는<br>나의 결제 성향 MBTI</p>
+      </div>
+
+      <div class="intro__actions" id="intro-actions">
+        <!-- app.js에서 버튼 동적 주입 -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────── 질문 화면 ────────────── -->
+  <section id="screen-question" class="screen" style="display:none;">
+    <div class="screen__inner">
+      <header class="question__header">
+        <button class="btn-icon" id="btn-back" aria-label="이전으로">←</button>
+        <div class="progress-bar">
+          <div class="progress-bar__fill" id="progress-fill"></div>
+        </div>
+        <span class="question__counter" id="question-counter">1 / 12</span>
+      </header>
+
+      <div class="question__body">
+        <p class="question__text" id="question-text">질문 텍스트가 여기에 표시됩니다.</p>
+      </div>
+
+      <div class="question__choices" id="question-choices">
+        <!-- engine.js에서 동적 생성 -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────────── 결과 화면 ────────────── -->
+  <section id="screen-result" class="screen" style="display:none;">
+    <div class="screen__inner">
+      <div class="result__card">
+        <div class="result__emoji" id="result-emoji">🎉</div>
+        <h2 class="result__type" id="result-type">결과 유형</h2>
+        <p class="result__name" id="result-name">캐릭터 이름</p>
+        <p class="result__desc" id="result-desc">결과 설명이 여기에 표시됩니다.</p>
+      </div>
+
+      <div class="result__actions">
+        <button class="btn btn--primary" id="btn-share">결과 공유하기</button>
+        <button class="btn btn--outline" id="btn-retry">다시 테스트하기</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
