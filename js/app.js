@@ -194,17 +194,10 @@ function showToast(message, type = 'error') {
    Supabase 결과 저장 (fire-and-forget)
 ───────────────────────────────────────── */
 async function saveResult(code, nickname) {
-  if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
-
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/results`, {
+    const res = await fetch('/.netlify/functions/save-result', {
       method: 'POST',
-      headers: {
-        'apikey':        SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type':  'application/json',
-        'Prefer':        'return=minimal',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ result_code: code, nickname }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);

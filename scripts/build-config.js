@@ -16,10 +16,10 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
+// SUPABASE_URL / SUPABASE_KEY는 Netlify Functions(서버사이드)에서만 사용합니다.
+// 클라이언트 번들에는 ADMIN_PASSWORD만 포함됩니다.
 const content = `// 이 파일은 빌드 시 자동 생성됩니다. 직접 수정하지 마세요.
-const SUPABASE_URL    = '${process.env.SUPABASE_URL}';
-const SUPABASE_KEY    = '${process.env.SUPABASE_KEY}';
-const ADMIN_PASSWORD  = '${process.env.ADMIN_PASSWORD}';
+const ADMIN_PASSWORD = '${process.env.ADMIN_PASSWORD}';
 `;
 
 const outPath = path.join(__dirname, '..', 'js', 'config.js');

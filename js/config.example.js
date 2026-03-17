@@ -9,6 +9,6 @@
  * 프로덕션 값은 Netlify 대시보드 > Site settings > Environment variables 에서 관리합니다.
  */
 
-const SUPABASE_URL   = 'https://<your-project-id>.supabase.co';
-const SUPABASE_KEY   = '<your-supabase-anon-key>';
+// SUPABASE_URL / SUPABASE_KEY는 Netlify Functions(서버사이드)에서만 사용합니다.
+// 로컬에서 Netlify Functions를 테스트하려면 .env 파일에 설정하세요.
 const ADMIN_PASSWORD = '<your-admin-password>';

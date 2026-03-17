@@ -64,22 +64,7 @@ function setDashboardState(state) {
    Supabase 데이터 조회
 ───────────────────────────────────────── */
 async function fetchStats() {
-  if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL' ||
-      !SUPABASE_KEY || SUPABASE_KEY === 'YOUR_SUPABASE_ANON_KEY') {
-    return _devDummyData();
-  }
-
-  // select=* 로 컬럼 존재 여부에 무관하게 조회 (nickname 컬럼 없어도 동작)
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/results?select=*&order=created_at.desc`,
-    {
-      headers: {
-        'apikey':        SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-      },
-    }
-  );
-
+  const res = await fetch('/.netlify/functions/get-stats');
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
