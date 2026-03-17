@@ -25,7 +25,10 @@
 
       <!-- 닉네임 입력 -->
       <div class="intro__name-field">
-        <label class="intro__name-label" for="nickname-input">닉네임</label>
+        <div class="intro__name-label-row">
+          <label class="intro__name-label" for="nickname-input">닉네임</label>
+          <span class="intro__name-counter" id="nickname-counter" aria-live="polite">0 / 20</span>
+        </div>
         <input
           type="text"
           id="nickname-input"
@@ -79,7 +82,6 @@
     </div>
   </section>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/engine.js"></script>

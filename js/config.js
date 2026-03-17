@@ -8,8 +8,8 @@
 
 // Supabase 프로젝트 설정
 // https://supabase.com/dashboard/project/<project-id>/settings/api
-var SUPABASE_URL = 'https://zqiemklzhtrkxuxqevnv.supabase.co';
-var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxaWVta2x6aHRya3h1eHFldm52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2Mjc0MzAsImV4cCI6MjA4OTIwMzQzMH0.CDR6fYKfFhRKvZoAz0qkmaFWw-Ftwy6qf5yXTmhyjMM';
+const SUPABASE_URL = 'https://zqiemklzhtrkxuxqevnv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxaWVta2x6aHRya3h1eHFldm52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2Mjc0MzAsImV4cCI6MjA4OTIwMzQzMH0.CDR6fYKfFhRKvZoAz0qkmaFWw-Ftwy6qf5yXTmhyjMM';
 
 // 관리자 페이지 비밀번호
-var ADMIN_PASSWORD = 'payletter';
+const ADMIN_PASSWORD = 'payletter';

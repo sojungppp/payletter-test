@@ -14,6 +14,7 @@ const appState = {
   answers:         [],   // ['A', 'B', ...]
   result:          null, // 최종 캐릭터 코드
   nickname:        '',
+  resultSaved:     false, // 이중 제출 방지 플래그
 };
 
 const STORAGE_KEY = 'pl_result';
@@ -68,9 +69,11 @@ function renderQuestion(index, direction = 'forward') {
   document.getElementById('question-counter').textContent =
     `Q${index + 1} / ${total}`;
   document.getElementById('progress-fill').style.width =
-    `${(index / total) * 100}%`;
+    `${((index + 1) / total) * 100}%`;
 
-  document.getElementById('btn-back').disabled = (index === 0);
+  const btnBack = document.getElementById('btn-back');
+  btnBack.disabled = (index === 0);
+  btnBack.style.visibility = index === 0 ? 'hidden' : 'visible';
 
   const newCard = document.createElement('div');
   newCard.className = `question__card question__card--enter-${direction}`;
@@ -135,6 +138,7 @@ function startTest() {
   appState.currentQuestion = 0;
   appState.answers         = [];
   appState.result          = null;
+  appState.resultSaved     = false;
 
   document.getElementById('question-slide-wrap').innerHTML = '';
 
@@ -160,6 +164,33 @@ function handleAnswer(choiceKey) {
 }
 
 /* ─────────────────────────────────────────
+   비차단 토스트 알림
+───────────────────────────────────────── */
+function showToast(message, type = 'error') {
+  // 기존 토스트가 있으면 제거
+  const existing = document.getElementById('pl-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'pl-toast';
+  toast.className = `pl-toast pl-toast--${type}`;
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+  toast.textContent = message;
+
+  document.body.appendChild(toast);
+
+  // 등장 애니메이션 트리거
+  requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('pl-toast--visible')));
+
+  // 4초 후 자동 제거
+  setTimeout(() => {
+    toast.classList.remove('pl-toast--visible');
+    toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+  }, 4000);
+}
+
+/* ─────────────────────────────────────────
    Supabase 결과 저장 (fire-and-forget)
 ───────────────────────────────────────── */
 async function saveResult(code, nickname) {
@@ -179,6 +210,7 @@ async function saveResult(code, nickname) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
   } catch (err) {
     console.error('[saveResult] 결과 저장 실패:', err);
+    showToast('결과 저장 중 문제가 발생했어요. 결과는 정상적으로 확인할 수 있습니다.');
   }
 }
 
@@ -186,6 +218,9 @@ async function saveResult(code, nickname) {
    테스트 완료 → 결과 저장 + 렌더링
 ───────────────────────────────────────── */
 function finishTest() {
+  if (appState.resultSaved) return; // 이중 제출 방지
+  appState.resultSaved = true;
+
   const character = calculateResult(appState.answers);
   if (!character) return;
 
@@ -199,6 +234,8 @@ function finishTest() {
     nickname:      appState.nickname,
     timestamp:     Date.now(),
   }));
+
+  history.replaceState(null, '', `?result=${character.code}`);
 
   renderResult(character);
   showScreen('screen-result');
@@ -238,24 +275,45 @@ function renderResult(character) {
   const header = document.createElement('div');
   header.className = 'result__header';
 
-  const nicknameTag = appState.nickname
-    ? `<span class="result__nickname-tag">${appState.nickname}님의 결과</span>`
-    : '';
+  // 캐릭터 이미지 (CSP 호환 — inline onerror 대신 addEventListener 사용)
+  const charImg = document.createElement('img');
+  charImg.className = 'result__char-img';
+  charImg.src = `images/${encodeURIComponent(character.characterName)}.png`;
+  charImg.alt = character.characterName;
 
-  header.innerHTML = `
-    <img
-      class="result__char-img"
-      src="images/${encodeURIComponent(character.characterName)}.png"
-      alt="${character.characterName}"
-      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
-    />
-    <div class="result__emoji" style="display:none;">${character.emoji}</div>
-    ${nicknameTag}
-    <p class="result__char-name">${character.characterName}</p>
-    <div class="result__badges">
-      <span class="badge badge--type">${character.axes[0]} · ${character.axes[1]}</span>
-    </div>
-  `;
+  const emojiDiv = document.createElement('div');
+  emojiDiv.className = 'result__emoji';
+  emojiDiv.style.display = 'none';
+  emojiDiv.textContent = character.emoji;
+
+  charImg.addEventListener('error', () => {
+    charImg.style.display = 'none';
+    emojiDiv.style.display = 'block';
+  }, { once: true });
+
+  header.appendChild(charImg);
+  header.appendChild(emojiDiv);
+
+  if (appState.nickname) {
+    const nicknameTag = document.createElement('span');
+    nicknameTag.className = 'result__nickname-tag';
+    nicknameTag.textContent = `${appState.nickname}님의 결과`;
+    header.appendChild(nicknameTag);
+  }
+
+  const charNameEl = document.createElement('p');
+  charNameEl.className = 'result__char-name';
+  charNameEl.textContent = character.characterName;
+  header.appendChild(charNameEl);
+
+  const badgesDiv = document.createElement('div');
+  badgesDiv.className = 'result__badges';
+  const typeBadge = document.createElement('span');
+  typeBadge.className = 'badge badge--type';
+  typeBadge.textContent = `${character.axes[0]} · ${character.axes[1]}`;
+  badgesDiv.appendChild(typeBadge);
+  header.appendChild(badgesDiv);
+
   container.appendChild(header);
 
   // 2. 한줄 소개
@@ -315,6 +373,17 @@ async function saveAsImage() {
   btn.textContent = '저장 중…';
 
   try {
+    // html2canvas를 처음 사용할 때만 동적 로드 (lazy-load)
+    if (typeof html2canvas === 'undefined') {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        script.onload  = resolve;
+        script.onerror = () => reject(new Error('html2canvas 로드 실패'));
+        document.head.appendChild(script);
+      });
+    }
+
     const el = document.getElementById('result-content');
     const canvas = await html2canvas(el, {
       backgroundColor: '#F0FAFA',
@@ -338,6 +407,34 @@ async function saveAsImage() {
 }
 
 /* ─────────────────────────────────────────
+   키보드 선택지 단축키 (질문 화면 전용)
+   1 또는 A → A 선택지 / 2 또는 B → B 선택지
+───────────────────────────────────────── */
+function _handleQuizKeydown(e) {
+  if (appState.currentScreen !== 'question') return;
+
+  const key = e.key.toUpperCase();
+  let targetKey = null;
+
+  if (key === 'A' || key === '1') targetKey = 'A';
+  else if (key === 'B' || key === '2') targetKey = 'B';
+  else return;
+
+  const wrap = document.getElementById('question-slide-wrap');
+  const btn  = wrap?.querySelector(`.choice-btn[data-key="${targetKey}"]`);
+
+  // 이미 disabled(선택 직후 잠금 상태)면 무시
+  if (!btn || btn.disabled) return;
+
+  // 시각적 선택 피드백 + 답변 처리
+  wrap.querySelectorAll('.choice-btn').forEach(b => (b.disabled = true));
+  btn.classList.add('choice-btn--selected');
+  setTimeout(() => handleAnswer(targetKey), 200);
+}
+
+document.addEventListener('keydown', _handleQuizKeydown);
+
+/* ─────────────────────────────────────────
    버튼 이벤트 바인딩 (DOMContentLoaded 1회)
 ───────────────────────────────────────── */
 function _initButtons() {
@@ -356,9 +453,12 @@ function _initButtons() {
     appState.answers         = [];
     appState.result          = null;
     appState.nickname        = '';
-    // 닉네임 입력 초기화
+    history.replaceState(null, '', location.pathname);
+    // 닉네임 입력 + 카운터 초기화
     const ni = document.getElementById('nickname-input');
     if (ni) ni.value = '';
+    const nc = document.getElementById('nickname-counter');
+    if (nc) { nc.textContent = '0 / 20'; nc.classList.remove('intro__name-counter--warn'); }
     showScreen('screen-intro');
     renderIntroActions();
   });
@@ -369,10 +469,12 @@ function _initButtons() {
     if (!char) return;
 
     const nicknameStr = appState.nickname ? `${appState.nickname}님은 ` : '';
+    const shareUrl = `${location.origin}${location.pathname}?result=${appState.result}`;
     const text =
       `${nicknameStr}페이레터 캐릭터 테스트 결과 [${char.characterName}]!\n` +
       `한줄 소개: '${char.title}'\n` +
-      `최고의 궁합은 ${char.chemistry.best.name}, 주의가 필요한 궁합은 ${char.chemistry.worst.name}!`;
+      `최고의 궁합은 ${char.chemistry.best.name}, 주의가 필요한 궁합은 ${char.chemistry.worst.name}!\n\n` +
+      `▶ 나도 테스트하기: ${shareUrl}`;
 
     if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text)
@@ -386,8 +488,18 @@ function _initButtons() {
   // 이미지 저장
   document.getElementById('btn-save-image').addEventListener('click', saveAsImage);
 
-  // 닉네임 입력 필드 Enter 키
-  document.getElementById('nickname-input').addEventListener('keydown', e => {
+  // 닉네임 입력 필드: 글자 수 카운터 + Enter 키
+  const nicknameInput   = document.getElementById('nickname-input');
+  const nicknameCounter = document.getElementById('nickname-counter');
+  const MAX_NICKNAME    = 20;
+
+  nicknameInput.addEventListener('input', () => {
+    const len = nicknameInput.value.length;
+    nicknameCounter.textContent = `${len} / ${MAX_NICKNAME}`;
+    nicknameCounter.classList.toggle('intro__name-counter--warn', len >= MAX_NICKNAME);
+  });
+
+  nicknameInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') startTest();
   });
 }
@@ -409,9 +521,27 @@ function _fallbackCopy(text) {
 }
 
 /* ─────────────────────────────────────────
+   URL ?result=CODE 로 직접 진입 처리
+───────────────────────────────────────── */
+function _checkResultFromURL() {
+  const code = new URLSearchParams(location.search).get('result');
+  if (!code) return;
+
+  const character = CHARACTERS[code];
+  if (!character) return;
+
+  appState.result   = code;
+  appState.nickname = '';
+
+  renderResult(character);
+  showScreen('screen-result');
+}
+
+/* ─────────────────────────────────────────
    초기화
 ───────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   renderIntroActions();
   _initButtons();
+  _checkResultFromURL();
 });

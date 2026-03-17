@@ -126,10 +126,28 @@ body {
   gap: 8px;
 }
 
+.intro__name-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
 .intro__name-label {
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--color-muted);
+}
+
+.intro__name-counter {
+  font-size: 0.78rem;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+  transition: color 0.2s;
+}
+
+.intro__name-counter--warn {
+  color: #e53e3e;
+  font-weight: 600;
 }
 
 .intro__name-field input[type="text"] {
@@ -630,6 +648,48 @@ body {
   flex-direction: column;
   gap: 12px;
   margin-top: 4px;
+}
+
+/* ─────────────────────────────────────────
+   비차단 토스트 알림
+───────────────────────────────────────── */
+.pl-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  max-width: calc(100vw - 48px);
+  width: max-content;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 9999;
+}
+
+.pl-toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.pl-toast--error {
+  background: #fff5f5;
+  color: #c53030;
+  border: 1.5px solid #feb2b2;
+  box-shadow: 0 4px 20px rgba(197, 48, 48, 0.12);
+}
+
+.pl-toast--success {
+  background: #f0fff4;
+  color: #276749;
+  border: 1.5px solid #9ae6b4;
+  box-shadow: 0 4px 20px rgba(39, 103, 73, 0.12);
 }
 
 /* ─────────────────────────────────────────
